@@ -755,3 +755,378 @@
     </script>
 </body>
 </html>
+<img src="https://images.unsplash.com/..." 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minneriya & Kaudulla Wild Tours | Sri Lanka Safari</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['Playfair Display', 'serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        safari: {
+                            900: '#1a1a0e',
+                            800: '#2d2d1a',
+                            700: '#4a4a2a',
+                            600: '#6b6b3e',
+                            500: '#8b8b5a',
+                            400: '#a8a878',
+                            300: '#c4c49a',
+                            200: '#e0e0c0',
+                            100: '#f5f5e6',
+                            50: '#fafaf0',
+                        },
+                        earth: {
+                            DEFAULT: '#8B6914',
+                            light: '#C19A3B',
+                            dark: '#5C4A0A',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .editable { position: relative; }
+        .admin-active .editable {
+            outline: 2px dashed #8B6914;
+            outline-offset: 4px;
+            cursor: text;
+        }
+        .editable-image {
+            position: relative;
+            cursor: default;
+        }
+        .admin-active .editable-image {
+            cursor: pointer;
+            position: relative;
+        }
+        .admin-active .editable-image::after {
+            content: '📷 Change Photo';
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .admin-active .editable-image:hover::after {
+            opacity: 1;
+        }
+        .hero-bg {
+            background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), var(--hero-img, url('https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=1920&q=80'));
+            background-size: cover;
+            background-position: center;
+        }
+        .park-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .park-card:hover {
+            transform: translateY(-8px);
+        }
+        .gallery-item {
+            break-inside: avoid;
+            margin-bottom: 1rem;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+        .scroll-reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Admin Panel Styles */
+        .admin-panel {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 60;
+            overflow-y: auto;
+        }
+        .admin-panel.active {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .admin-panel-content {
+            background: white;
+            border-radius: 1rem;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="font-sans text-safari-800 bg-safari-50">
+
+    <!-- Admin Bar -->
+    <div id="adminBar" class="hidden fixed top-0 left-0 right-0 bg-earth-dark text-white z-50 px-6 py-2 flex justify-between items-center text-sm">
+        <div class="flex items-center gap-4">
+            <span class="font-semibold"><i class="fas fa-shield-alt mr-2"></i>Admin Mode Active</span>
+            <button onclick="openAdminPanel()" class="bg-earth hover:bg-earth-light px-4 py-1 rounded transition">
+                <i class="fas fa-cogs mr-1"></i>Manage Photos
+            </button>
+            <button onclick="saveChanges()" class="bg-green-700 hover:bg-green-600 px-4 py-1 rounded transition">
+                <i class="fas fa-save mr-1"></i>Save All Changes
+            </button>
+            <button onclick="resetDefaults()" class="bg-red-700 hover:bg-red-600 px-4 py-1 rounded transition">
+                <i class="fas fa-undo mr-1"></i>Reset All
+            </button>
+        </div>
+        <button onclick="logoutAdmin()" class="text-safari-200 hover:text-white">
+            <i class="fas fa-sign-out-alt mr-1"></i>Logout
+        </button>
+    </div>
+
+    <!-- Admin Panel Modal -->
+    <div id="adminPanel" class="admin-panel">
+        <div class="admin-panel-content shadow-2xl">
+            <div class="sticky top-0 bg-safari-900 text-white px-6 py-4 flex justify-between items-center rounded-t-xl z-10">
+                <h2 class="font-serif text-xl font-bold"><i class="fas fa-images mr-2"></i>Photo Manager</h2>
+                <button onclick="closeAdminPanel()" class="text-white hover:text-earth-light text-xl"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-6 space-y-8">
+                
+                <!-- Hero Image -->
+                <div>
+                    <h3 class="font-semibold text-safari-900 mb-3 border-b pb-2">Hero Background</h3>
+                    <div class="flex items-center gap-4">
+                        <div class="w-32 h-20 bg-safari-200 rounded-lg overflow-hidden">
+                            <img id="adminHeroPreview" src="https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=400&q=80" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1">
+                            <input type="file" accept="image/*" onchange="handleImageUpload(this, 'hero')" class="block w-full text-sm text-safari-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-earth file:text-white hover:file:bg-earth-dark">
+                            <p class="text-xs text-safari-500 mt-1">Recommended: 1920x1080px. Max 2MB.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Park Images -->
+                <div>
+                    <h3 class="font-semibold text-safari-900 mb-3 border-b pb-2">Park Photos</h3>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div class="border rounded-lg p-3">
+                            <p class="text-sm font-medium mb-2">Minneriya Park</p>
+                            <div class="h-32 bg-safari-200 rounded-lg overflow-hidden mb-2">
+                                <img id="adminPark1Preview" src="https://images.unsplash.com/photo-1561731216-c3a4d99437d5?w=400&q=80" class="w-full h-full object-cover">
+                            </div>
+                            <input type="file" accept="image/*" onchange="handleImageUpload(this, 'park1')" class="block w-full text-xs text-safari-600 file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:bg-earth file:text-white">
+                        </div>
+                        <div class="border rounded-lg p-3">
+                            <p class="text-sm font-medium mb-2">Kaudulla Park</p>
+                            <div class="h-32 bg-safari-200 rounded-lg overflow-hidden mb-2">
+                                <img id="adminPark2Preview" src="https://images.unsplash.com/photo-1581852017103-68accd557d1c?w=400&q=80" class="w-full h-full object-cover">
+                            </div>
+                            <input type="file" accept="image/*" onchange="handleImageUpload(this, 'park2')" class="block w-full text-xs text-safari-600 file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:bg-earth file:text-white">
+                        </div>
+                        <div class="border rounded-lg p-3">
+                            <p class="text-sm font-medium mb-2">Hurulu Eco Park</p>
+                            <div class="h-32 bg-safari-200 rounded-lg overflow-hidden mb-2">
+                                <img id="adminPark3Preview" src="https://images.unsplash.com/photo-1516426122078-c23e76319801?w=400&q=80" class="w-full h-full object-cover">
+                            </div>
+                            <input type="file" accept="image/*" onchange="handleImageUpload(this, 'park3')" class="block w-full text-xs text-safari-600 file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:bg-earth file:text-white">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- About Image -->
+                <div>
+                    <h3 class="font-semibold text-safari-900 mb-3 border-b pb-2">About Section Photo</h3>
+                    <div class="flex items-center gap-4">
+                        <div class="w-32 h-24 bg-safari-200 rounded-lg overflow-hidden">
+                            <img id="adminAboutPreview" src="https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?w=400&q=80" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1">
+                            <input type="file" accept="image/*" onchange="handleImageUpload(this, 'about')" class="block w-full text-sm text-safari-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-earth file:text-white hover:file:bg-earth-dark">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gallery Images -->
+                <div>
+                    <h3 class="font-semibold text-safari-900 mb-3 border-b pb-2">Gallery Photos (6 slots)</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div class="border rounded-lg p-3">
+                            <div class="h-24 bg-safari-200 rounded-lg overflow-hidden mb-2">
+                                <img id="adminGal0Preview" src="https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?w=400&q=80" class="w-full h-full object-cover">
+                            </div>
+                            <input type="file" accept="image/*" onchange="handleImageUpload(this, 'gallery', 0)" class="block w-full text-xs file:py-1 file:px-2 file:rounded file:border-0 file:bg-earth file:text-white">
+                        </div>
+                        <div class="border rounded-lg p-3">
+                            <div class="h-24 bg-safari-200 rounded-lg overflow-hidden mb-2">
+                                <img id="adminGal1Preview" src="https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=400&q=80" class="w-full h-full object-cover">
+                            </div>
+                            <input type="file" accept="image/*" onchange="handleImageUpload(this, 'gallery', 1)" class="block w-full text-xs file:py-1 file:px-2 file:rounded file:border-0 file:bg-earth file:text-white">
+                        </div>
+                        <div class="border rounded-lg p-3">
+                            <div class="h-24 bg-safari-200 rounded-lg overflow-hidden mb-2">
+                                <img id="adminGal2Preview" src="https://images.unsplash.com/photo-1561731216-c3a4d99437d5?w=400&q=80" class="w-full h-full object-cover">
+                            </div>
+                            <input type="file" accept="image/*" onchange="handleImageUpload(this, 'gallery', 2)" class="block w-full text-xs file:py-1 file:px-2 file:rounded file:border-0 file:bg-earth file:text-white">
+                        </div>
+                        <div class="border rounded-lg p-3">
+                            <div class="h-24 bg-safari-200 rounded-lg overflow-hidden mb-2">
+                                <img id="adminGal3Preview" src="https://images.unsplash.com/photo-1516426122078-c23e76319801?w=400&q=80" class="w-full h-full object-cover">
+                            </div>
+                            <input type="file" accept="image/*" onchange="handleImageUpload(this, 'gallery', 3)" class="block w-full text-xs file:py-1 file:px-2 file:rounded file:border-0 file:bg-earth file:text-white">
+                        </div>
+                        <div class="border rounded-lg p-3">
+                            <div class="h-24 bg-safari-200 rounded-lg overflow-hidden mb-2">
+                                <img id="adminGal4Preview" src="https://images.unsplash.com/photo-1581852017103-68accd557d1c?w=400&q=80" class="w-full h-full object-cover">
+                            </div>
+                            <input type="file" accept="image/*" onchange="handleImageUpload(this, 'gallery', 4)" class="block w-full text-xs file:py-1 file:px-2 file:rounded file:border-0 file:bg-earth file:text-white">
+                        </div>
+                        <div class="border rounded-lg p-3">
+                            <div class="h-24 bg-safari-200 rounded-lg overflow-hidden mb-2">
+                                <img id="adminGal5Preview" src="https://images.unsplash.com/photo-1474511320723-9a56873571b7?w=400&q=80" class="w-full h-full object-cover">
+                            </div>
+                            <input type="file" accept="image/*" onchange="handleImageUpload(this, 'gallery', 5)" class="block w-full text-xs file:py-1 file:px-2 file:rounded file:border-0 file:bg-earth file:text-white">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-800">
+                    <i class="fas fa-info-circle mr-1"></i> <strong>Note:</strong> Photos are stored in your browser. Clear browser data = lose photos. For permanent hosting, upload to your web server and paste the URL.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed w-full z-40 transition-all duration-300 bg-transparent text-white">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-paw text-3xl text-earth-light"></i>
+                <div>
+                    <h1 class="font-serif text-xl font-bold tracking-wide editable" data-key="siteName">Minneriya & Kaudulla</h1>
+                    <p class="text-xs tracking-widest uppercase editable" data-key="siteTagline">Wild Tours</p>
+                </div>
+            </div>
+            <div class="hidden md:flex items-center gap-8 text-sm font-medium">
+                <a href="#home" class="hover:text-earth-light transition">Home</a>
+                <a href="#parks" class="hover:text-earth-light transition">Parks</a>
+                <a href="#tours" class="hover:text-earth-light transition">Tours</a>
+                <a href="#gallery" class="hover:text-earth-light transition">Gallery</a>
+                <a href="#contact" class="hover:text-earth-light transition">Contact</a>
+                <button onclick="toggleAdminLogin()" class="bg-earth hover:bg-earth-light px-5 py-2 rounded-full transition">
+                    <i class="fas fa-lock mr-1"></i>Admin
+                </button>
+            </div>
+            <button class="md:hidden text-2xl" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        <div id="mobileMenu" class="hidden md:hidden bg-safari-900/95 backdrop-blur-md px-6 py-4">
+            <a href="#home" class="block py-2 hover:text-earth-light">Home</a>
+            <a href="#parks" class="block py-2 hover:text-earth-light">Parks</a>
+            <a href="#tours" class="block py-2 hover:text-earth-light">Tours</a>
+            <a href="#gallery" class="block py-2 hover:text-earth-light">Gallery</a>
+            <a href="#contact" class="block py-2 hover:text-earth-light">Contact</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-bg min-h-screen flex items-center justify-center text-white relative">
+        <div class="text-center px-6 max-w-4xl animate-in">
+            <p class="text-earth-light tracking-[0.3em] uppercase text-sm mb-4 editable" data-key="heroSubtitle">Discover the Wild Heart of Sri Lanka</p>
+            <h1 class="font-serif text-5xl md:text-7xl font-bold mb-6 leading-tight editable" data-key="heroTitle">
+                Where Elephants Roam<br>in Freedom
+            </h1>
+            <p class="text-lg md:text-xl text-safari-200 mb-10 max-w-2xl mx-auto editable" data-key="heroDesc">
+                Experience unforgettable safari adventures across Minneriya, Kaudulla, and Hurulu Eco Park. Witness the majestic gathering of elephants in their natural habitat.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="#tours" class="bg-earth hover:bg-earth-light text-white px-8 py-4 rounded-full font-semibold transition transform hover:scale-105">
+                    Book a Safari <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+                <a href="#parks" class="border-2 border-white/30 hover:border-white text-white px-8 py-4 rounded-full font-semibold transition backdrop-blur-sm">
+                    Explore Parks
+                </a>
+            </div>
+        </div>
+        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+            <i class="fas fa-chevron-down text-2xl text-white/60"></i>
+        </div>
+    </section>
+
+    <!-- Stats Bar -->
+    <div class="bg-earth-dark text-white py-8">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            <div>
+                <div class="text-3xl font-serif font-bold editable" data-key="stat1">15+</div>
+                <div class="text-sm text-safari-300 editable" data-key="stat1Label">Years Experience</div>
+            </div>
+            <div>
+                <div class="text-3xl font-serif font-bold editable" data-key="stat2">3</div>
+                <div class="text-sm text-safari-300 editable" data-key="stat2Label">National Parks</div>
+            </div>
+            <div>
+                <div class="text-3xl font-serif font-bold editable" data-key="stat3">5000+</div>
+                <div class="text-sm text-safari-300 editable" data-key="stat3Label">Happy Travelers</div>
+            </div>
+            <div>
+                <div class="text-3xl font-serif font-bold editable" data-key="stat4">100%</div>
+                <div class="text-sm text-safari-300 editable" data-key="stat4Label">Satisfaction</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Section -->
+    <section class="py-20 max-w-7xl mx-auto px-6">
+        <div class="grid md:grid-cols-2 gap-12 items-center scroll-reveal">
+            <div>
+                <p class="text-earth font-semibold tracking-widest uppercase text-sm mb-3 editable" data-key="aboutSubtitle">About Our Safari</p>
+                <h2 class="font-serif text-4xl font-bold text-safari-900 mb-6 editable" data-key="aboutTitle">Your Gateway to Sri Lanka's Wildlife</h2>
+                <p class="text-safari-700 leading-relaxed mb-6 editable" data-key="aboutDesc1">
+                    Minneriya and Kaudulla Wild Tours is your trusted partner for authentic wildlife experiences in Sri Lanka's cultural triangle. Led by experienced naturalists and guides, we offer intimate encounters with the island's most magnificent creatures.
+                </p>
+                <p class="text-safari-700 leading-relaxed mb-8 editable" data-key="aboutDesc2">
+                    From the world-famous elephant gatherings to elusive leopards and vibrant birdlife, every safari is crafted to bring you closer to nature while supporting conservation efforts.
+                </p>
+                <div class="flex gap-4">
+                    <div class="flex items-center gap-2 text-safari-700">
+                        <i class="fas fa-check-circle text-earth"></i>
+                        <span class="editable" data-key="feature1">Expert Guides</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-safari-700">
+                        <i class="fas fa-check-circle text-earth"></i>
+                        <span class="editable" data-key="feature2">4x4 Vehicles</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-safari-700">
+                        <i class="fas fa-check-circle text-earth"></i>
+                        <span class="editable" data-key="feature3">Best Times</span>
+                    </div>
+                </div>
+            </div>
+            <div class="relative">
+                <img id="aboutImg" src="https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?w=800&q=80" alt="Safari" class="rounded-2xl shadow-2xl w-full editable-image" onclick="adminImageClick(this, 'about')">
+                <div class="absolute -bottom-6 -left-6 bg-earth text-white p-6 rounded-xl shadow-lg hidden md:block">
+                    <div class="text
