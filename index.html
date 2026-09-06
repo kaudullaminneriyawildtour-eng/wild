@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minneriya & Kaudulla Wild Tours | Sri Lanka Safari</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['Playfair Display', 'serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        safari: {
+                            900: '#1a1a0e',
+                            800: '#2d2d1a',
+                            700: '#4a4a2a',
+                            600: '#6b6b3e',
+                            500: '#8b8b5a',
+                            400: '#a8a878',
+                            300: '#c4c49a',
+                            200: '#e0e0c0',
+                            100: '#f5f5e6',
+                            50: '#fafaf0',
+                        },
+                        earth: {
+                            DEFAULT: '#8B6914',
+                            light: '#C19A3B',
+                            dark: '#5C4A0A',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .editable { position: relative; }
+        .editable:hover::after {
+            content: '✎';
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #8B6914;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .admin-active .editable {
+            outline: 2px dashed #8B6914;
+            outline-offset: 4px;
+            cursor: text;
+        }
+        .hero-bg {
+            background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+        .park-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .park-card:hover {
+            transform: translateY(-8px);
+        }
+        .gallery-item {
+            break-inside: avoid;
+            margin-bottom: 1rem;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+        .scroll-reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="font-sans text-safari-800 bg-safari-50">
+
+    <!-- Admin Bar -->
+    <div id="adminBar" class="hidden fixed top-0 left-0 right-0 bg-earth-dark text-white z-50 px-6 py-2 flex justify-between items-center text-sm">
+        <div class="flex items-center gap-4">
+            <span class="font-semibold"><i class="fas fa-shield-alt mr-2"></i>Admin Mode Active</span>
+            <button onclick="saveChanges()" class="bg-earth hover:bg-earth-light px-4 py-1 rounded transition">
+                <i class="fas fa-save mr-1"></i>Save Changes
+            </button>
+            <button onclick="resetDefaults()" class="bg-red-700 hover:bg-red-600 px-4 py-1 rounded transition">
+                <i class="fas fa-undo mr-1"></i>Reset
+            </button>
+        </div>
+        <button onclick="logoutAdmin()" class="text-safari-200 hover:text-white">
+            <i class="fas fa-sign-out-alt mr-1"></i>Logout
+        </button>
+    </div>
+
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed w-full z-40 transition-all duration-300 bg-transparent text-white">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-paw text-3xl text-earth-light"></i>
+                <div>
+                    <h1 class="font-serif text-xl font-bold tracking-wide editable" data-key="siteName">Minneriya & Kaudulla</h1>
+                    <p class="text-xs tracking-widest uppercase editable" data-key="siteTagline">Wild Tours</p>
+                </div>
+            </div>
+            <div class="hidden md:flex items-center gap-8 text-sm font-medium">
+                <a href="#home" class="hover:text-earth-light transition">Home</a>
+                <a href="#parks" class="hover:text-earth-light transition">Parks</a>
+                <a href="#tours" class="hover:text-earth-light transition">Tours</a>
+                <a href="#gallery" class="hover:text-earth-light transition">Gallery</a>
+                <a href="#contact" class="hover:text-earth-light transition">Contact</a>
+                <button onclick="toggleAdminLogin()" class="bg-earth hover:bg-earth-light px-5 py-2 rounded-full transition">
+                    <i class="fas fa-lock mr-1"></i>Admin
+                </button>
+            </div>
+            <button class="md:hidden text-2xl" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="hidden md:hidden bg-safari-900/95 backdrop-blur-md px-6 py-4">
+            <a href="#home" class="block py-2 hover:text-earth-light">Home</a>
+            <a href="#parks" class="block py-2 hover:text-earth-light">Parks</a>
+            <a href="#tours" class="block py-2 hover:text-earth-light">Tours</a>
+            <a href="#gallery" class="block py-2 hover:text-earth-light">Gallery</a>
+            <a href="#contact" class="block py-2 hover:text-earth-light">Contact</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-bg min-h-screen flex items-center justify-center text-white relative">
+        <div class="text-center px-6 max-w-4xl animate-in">
+            <p class="text-earth-light tracking-[0.3em] uppercase text-sm mb-4 editable" data-key="heroSubtitle">Discover the Wild Heart of Sri Lanka</p>
+            <h1 class="font-serif text-5xl md:text-7xl font-bold mb-6 leading-tight editable" data-key="heroTitle">
+                Where Elephants Roam<br>in Freedom
+            </h1>
+            <p class="text-lg md:text-xl text-safari-200 mb-10 max-w-2xl mx-auto editable" data-key="heroDesc">
+                Experience unforgettable safari adventures across Minneriya, Kaudulla, and Hurulu Eco Park. Witness the majestic gathering of elephants in their natural habitat.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="#tours" class="bg-earth hover:bg-earth-light text-white px-8 py-4 rounded-full font-semibold transition transform hover:scale-105">
+                    Book a Safari <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+                <a href="#parks" class="border-2 border-white/30 hover:border-white text-white px-8 py-4 rounded-full font-semibold transition backdrop-blur-sm">
+                    Explore Parks
+                </a>
+            </div>
+        </div>
+        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+            <i class="fas fa-chevron-down text-2xl text-white/60"></i>
+        </div>
+    </section>
+
+    <!-- Stats Bar -->
+    <div class="bg-earth-dark text-white py-8">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            <div>
+                <div class="text-3xl font-serif font-bold editable" data-key="stat1">15+</div>
+                <div class="text-sm text-safari-300 editable" data-key="stat1Label">Years Experience</div>
+            </div>
+            <div>
+                <div class="text-3xl font-serif font-bold editable" data-key="stat2">3</div>
+                <div class="text-sm text-safari-300 editable" data-key="stat2Label">National Parks</div>
+            </div>
+            <div>
+                <div class="text-3xl font-serif font-bold editable" data-key="stat3">5000+</div>
+                <div class="text-sm text-safari-300 editable" data-key="stat3Label">Happy Travelers</div>
+            </div>
+            <div>
+                <div class="text-3xl font-serif font-bold editable" data-key="stat4">100%</div>
+                <div class="text-sm text-safari-300 editable" data-key="stat4Label">Satisfaction</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Section -->
+    <section class="py-20 max-w-7xl mx-auto px-6">
+        <div class="grid md:grid-cols-2 gap-12 items-center scroll-reveal">
+            <div>
+                <p class="text-earth font-semibold tracking-widest uppercase text-sm mb-3 editable" data-key="aboutSubtitle">About Our Safari</p>
+                <h2 class="font-serif text-4xl font-bold text-safari-900 mb-6 editable" data-key="aboutTitle">Your Gateway to Sri Lanka's Wildlife</h2>
+                <p class="text-safari-700 leading-relaxed mb-6 editable" data-key="aboutDesc1">
+                    Minneriya and Kaudulla Wild Tours is your trusted partner for authentic wildlife experiences in Sri Lanka's cultural triangle. Led by experienced naturalists and guides, we offer intimate encounters with the island's most magnificent creatures.
+                </p>
+                <p class="text-safari-700 leading-relaxed mb-8 editable" data-key="aboutDesc2">
+                    From the world-famous elephant gatherings to elusive leopards and vibrant birdlife, every safari is crafted to bring you closer to nature while supporting conservation efforts.
+                </p>
+                <div class="flex gap-4">
+                    <div class="flex items-center gap-2 text-safari-700">
+                        <i class="fas fa-check-circle text-earth"></i>
+                        <span class="editable" data-key="feature1">Expert Guides</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-safari-700">
+                        <i class="fas fa-check-circle text-earth"></i>
+                        <span class="editable" data-key="feature2">4x4 Vehicles</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-safari-700">
+                        <i class="fas fa-check-circle text-earth"></i>
+                        <span class="editable" data-key="feature3">Best Times</span>
+                    </div>
+                </div>
+            </div>
+            <div class="relative">
+                <img src="https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?w=800&q=80" alt="Safari" class="rounded-2xl shadow-2xl w-full">
+                <div class="absolute -bottom-6 -left-6 bg-earth text-white p-6 rounded-xl shadow-lg hidden md:block">
+                    <div class="text-3xl font-serif font-bold editable" data-key="experienceYears">15+</div>
+                    <div class="text-sm editable" data-key="experienceText">Years of Excellence</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Parks Section -->
+    <section id="parks" class="py-20 bg-safari-100">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16 scroll-reveal">
+                <p class="text-earth font-semibold tracking-widest uppercase text-sm mb-3 editable" data-key="parksSubtitle">Explore Nature</p>
+                <h2 class="font-serif text-4xl md:text-5xl font-bold text-safari-900 editable" data-key="parksTitle">Our Three Signature Parks</h2>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Minneriya -->
+                <div class="park-card bg-white rounded-2xl overflow-hidden shadow-lg scroll-reveal">
+                    <div class="h-64 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1561731216-c3a4d99437d5?w=600&q=80" alt="Minneriya" class="w-full h-full object-cover hover:scale-110 transition duration-700">
+                    </div>
+                    <div class="p-8">
+                        <div class="flex items-center gap-2 text-earth mb-3">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span class="text-sm font-semibold uppercase tracking-wider editable" data-key="park1Location">Matale District</span>
+                        </div>
+                        <h3 class="font-serif text-2xl font-bold text-safari-900 mb-3 editable" data-key="park1Name">Minneriya National Park</h3>
+                        <p class="text-safari-700 mb-6 leading-relaxed editable" data-key="park1Desc">
+                            Famous for "The Gathering" – the largest congregation of Asian elephants in the world. Over 300 elephants gather around the ancient Minneriya Tank during the dry season.
+                        </p>
+                        <div class="flex justify-between items-center pt-4 border-t border-safari-200">
+                            <span class="text-sm text-safari-600 editable" data-key="park1BestTime"><i class="far fa-clock mr-1"></i>Best: June - Sept</span>
+                            <span class="text-earth font-semibold editable" data-key="park1Price">From $45</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kaudulla -->
+                <div class="park-card bg-white rounded-2xl overflow-hidden shadow-lg scroll-reveal">
+                    <div class="h-64 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1581852017103-68accd557d1c?w=600&q=80" alt="Kaudulla" class="w-full h-full object-cover hover:scale-110 transition duration-700">
+                    </div>
+                    <div class="p-8">
+                        <div class="flex items-center gap-2 text-earth mb-3">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span class="text-sm font-semibold uppercase tracking-wider editable" data-key="park2Location">Polonnaruwa District</span>
+                        </div>
+                        <h3 class="font-serif text-2xl font-bold text-safari-900 mb-3 editable" data-key="park2Name">Kaudulla National Park</h3>
+                        <p class="text-safari-700 mb-6 leading-relaxed editable" data-key="park2Desc">
+                            A serene sanctuary connecting elephant corridors. Kaudulla offers peaceful safari experiences with excellent birdwatching opportunities and fewer crowds than Minneriya.
+                        </p>
+                        <div class="flex justify-between items-center pt-4 border-t border-safari-200">
+                            <span class="text-sm text-safari-600 editable" data-key="park2BestTime"><i class="far fa-clock mr-1"></i>Best: Aug - Dec</span>
+                            <span class="text-earth font-semibold editable" data-key="park2Price">From $40</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hurulu Eco -->
+                <div class="park-card bg-white rounded-2xl overflow-hidden shadow-lg scroll-reveal">
+                    <div class="h-64 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1516426122078-c23e76319801?w=600&q=80" alt="Hurulu" class="w-full h-full object-cover hover:scale-110 transition duration-700">
+                    </div>
+                    <div class="p-8">
+                        <div class="flex items-center gap-2 text-earth mb-3">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span class="text-sm font-semibold uppercase tracking-wider editable" data-key="park3Location">Habarana</span>
+                        </div>
+                        <h3 class="font-serif text-2xl font-bold text-safari-900 mb-3 editable" data-key="park3Name">Hurulu Eco Park</h3>
+                        <p class="text-safari-700 mb-6 leading-relaxed editable" data-key="park3Desc">
+                            A designated biosphere reserve with dense dry evergreen forest. Perfect for spotting elephants, leopards, and endemic bird species in a pristine natural setting.
+                        </p>
+                        <div class="flex justify-between items-center pt-4 border-t border-safari-200">
+                            <span class="text-sm text-safari-600 editable" data-key="park3BestTime"><i class="far fa-clock mr-1"></i>Best: Year Round</span>
+                            <span class="text-earth font-semibold editable" data-key="park3Price">From $35</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tours Section -->
+    <section id="tours" class="py-20 max-w-7xl mx-auto px-6">
+        <div class="text-center mb-16 scroll-reveal">
+            <p class="text-earth font-semibold tracking-widest uppercase text-sm mb-3 editable" data-key="toursSubtitle">Choose Your Adventure</p>
+            <h2 class="font-serif text-4xl md:text-5xl font-bold text-safari-900 editable" data-key="toursTitle">Safari Packages</h2>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- Morning Safari -->
+            <div class="border-2 border-safari-200 rounded-2xl p-8 hover:border-earth transition scroll-reveal relative">
+                <div class="text-earth text-4xl mb-4"><i class="fas fa-sun"></i></div>
+                <h3 class="font-serif text-2xl font-bold text-safari-900 mb-2 editable" data-key="tour1Name">Morning Safari</h3>
+                <p class="text-safari-600 mb-6 editable" data-key="tour1Desc">Experience the awakening of the jungle. Best time for birdwatching and predator sightings.</p>
+                <ul class="space-y-3 mb-8 text-safari-700">
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-earth text-sm"></i> <span class="editable" data-key="tour1Feature1">5:30 AM - 9:30 AM</span></li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-earth text-sm"></i> <span class="editable" data-key="tour1Feature2">Private 4x4 Jeep</span></li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-earth text-sm"></i> <span class="editable" data-key="tour1Feature3">Expert Naturalist</span></li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-earth text-sm"></i> <span class="editable" data-key="tour1Feature4">Refreshments</span></li>
+                </ul>
+                <div class="text-3xl font-serif font-bold text-safari-900 mb-4 editable" data-key="tour1Price">$45</div>
+                <button class="w-full bg-safari-900 text-white py-3 rounded-full hover:bg-earth transition editable" data-key="tour1Btn">Book Now</button>
+            </div>
+
+            <!-- Evening Safari -->
+            <div class="border-2 border-earth rounded-2xl p-8 relative overflow-hidden scroll-reveal">
+                <div class="absolute top-4 right-4 bg-earth text-white text-xs font-bold px-3 py-1 rounded-full editable" data-key="tour2Badge">POPULAR</div>
+                <div class="text-earth text-4xl mb-4"><i class="fas fa-cloud-sun"></i></div>
+                <h3 class="font-serif text-2xl font-bold text-safari-900 mb-2 editable" data-key="tour2Name">Evening Safari</h3>
+                <p class="text-safari-600 mb-6 editable" data-key="tour2Desc">The golden hour for elephant gatherings. Spectacular sunset views over the tank.</p>
+                <ul class="space-y-3 mb-8 text-safari-700">
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-earth text-sm"></i> <span class="editable" data-key="tour2Feature1">2:30 PM - 6:00 PM</span></li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-earth text-sm"></i> <span class="editable" data-key="tour2Feature2">Private 4x4 Jeep</span></li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-earth text-sm"></i> <span class="editable" data-key="tour2Feature3">Expert Naturalist</span></li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-earth text-sm"></i> <span class="editable" data-key="tour2Feature4">Sunset Photography</span></li>
+                </ul>
+                <div class="text-3xl font-serif font-bold text-safari-900 mb-4 editable" data-key="tour2Price">$55</div>
+                <button class="w-full bg-earth text-white py-3 rounded-full hover:bg-earth-dark transition editable" data-key="tour2Btn">Book Now</button>
+            </div>
+
+            <!-- Full Day -->
+            <div class="border-2 border-safari-200 rounded-2xl p-8 hover:border-earth transition scroll-reveal">
+                <div class="text-earth text-4xl mb-4"><i class="fas fa-infinity"></i></div>
+                <h3 class="font-serif text-2xl font-bold text-safari-900 mb-2 editable" data-key="tour3Name">Full Day Expedition</h3>
+                <p class="text-safari-600 mb-6 editable" data-key="tour3Desc">The ultimate wildlife experience. Visit multiple parks and maximize your sightings.</p>
+                <ul class="space-y-3 mb-8 text-safari-700">
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-earth text-sm"></i> <span class="editable" data-key="tour3Feature1">6:00 AM - 6:00 PM</span></li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-earth text-sm"></i> <span class="editable" data-key="tour3Feature2">2 Parks in 1 Day</span></li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-earth text-sm"></i> <span class="editable" data-key="tour3Feature3">Gourmet Lunch</span></li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-earth text-sm"></i> <span class="editable" data-key="tour3Feature4">Photography Guide</span></li>
+                </ul>
+                <div class="text-3xl font-serif font-bold text-safari-900 mb-4 editable" data-key="tour3Price">$120</div>
+                <button class="w-full bg-safari-900 text-white py-3 rounded-full hover:bg-earth transition editable" data-key="tour3Btn">Book Now</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="py-20 bg-safari-900 text-white">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16 scroll-reveal">
+                <p class="text-earth-light font-semibold tracking-widest uppercase text-sm mb-3 editable" data-key="gallerySubtitle">Captured Moments</p>
+                <h2 class="font-serif text-4xl md:text-5xl font-bold editable" data-key="galleryTitle">Wildlife Gallery</h2>
+            </div>
+            <div class="columns-1 md:columns-3 gap-4 space-y-4">
+                <div class="gallery-item rounded-xl overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?w=600&q=80" class="w-full hover:scale-105 transition duration-500" alt="Elephant">
+                </div>
+                <div class="gallery-item rounded-xl overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=600&q=80" class="w-full hover:scale-105 transition duration-500" alt="Safari Jeep">
+                </div>
+                <div class="gallery-item rounded-xl overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1561731216-c3a4d99437d5?w=600&q=80" class="w-full hover:scale-105 transition duration-500" alt="Elephants">
+                </div>
+                <div class="gallery-item rounded-xl overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1516426122078-c23e76319801?w=600&q=80" class="w-full hover:scale-105 transition duration-500" alt="Leopard">
+                </div>
+                <div class="gallery-item rounded-xl overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1581852017103-68accd557d1c?w=600&q=80" class="w-full hover:scale-105 transition duration-500" alt="Birds">
+                </div>
+                <div class="gallery-item rounded-xl overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1474511320723-9a56873571b7?w=600&q=80" class="w-full hover:scale-105 transition duration-500" alt="Deer">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 max-w-7xl mx-auto px-6">
+        <div class="grid md:grid-cols-2 gap-12 scroll-reveal">
+            <div>
+                <p class="text-earth font-semibold tracking-widest uppercase text-sm mb-3 editable" data-key="contactSubtitle">Get in Touch</p>
+                <h2 class="font-serif text-4xl font-bold text-safari-900 mb-6 editable" data-key="contactTitle">Start Your Adventure</h2>
+                <p class="text-safari-700 mb-8 editable" data-key="contactDesc">
+                    Ready to witness the magic of Sri Lanka's wildlife? Contact us to customize your safari experience. We respond within 24 hours.
+                </p>
+                
+                <div class="space-y-6">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 bg-earth/10 rounded-full flex items-center justify-center text-earth flex-shrink-0">
+                            <i class="fas fa-phone-alt"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-safari-900 editable" data-key="contactPhoneLabel">Phone / WhatsApp</h4>
+                            <p class="text-safari-700 editable" data-key="contactPhone">+94 77 123 4567</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 bg-earth/10 rounded-full flex items-center justify-center text-earth flex-shrink-0">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-safari-900 editable" data-key="contactEmailLabel">Email</h4>
+                            <p class="text-safari-700 editable" data-key="contactEmail">info@minneriyawildtours.com</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 bg-earth/10 rounded-full flex items-center justify-center text-earth flex-shrink-0">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-safari-900 editable" data-key="contactAddressLabel">Location</h4>
+                            <p class="text-safari-700 editable" data-key="contactAddress">Habarana Road, Sigiriya, Sri Lanka</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 mt-8">
+                    <a href="#" class="w-10 h-10 bg-safari-900 text-white rounded-full flex items-center justify-center hover:bg-earth transition"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="w-10 h-10 bg-safari-900 text-white rounded-full flex items-center justify-center hover:bg-earth transition"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="w-10 h-10 bg-safari-900 text-white rounded-full flex items-center justify-center hover:bg-earth transition"><i class="fab fa-tripadvisor"></i></a>
+                    <a href="#" class="w-10 h-10 bg-safari-900 text-white rounded-full flex items-center justify-center hover:bg-earth transition"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl shadow-lg border border-safari-200">
+                <form onsubmit="event.preventDefault(); alert('Thank you for your inquiry! We will contact you shortly.');" class="space-y-4">
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <input type="text" placeholder="Your Name" class="w-full px-4 py-3 rounded-lg border border-safari-200 focus:border-earth focus:outline-none" required>
+                        <input type="email" placeholder="Email Address" class="w-full px-4 py-3 rounded-lg border border-safari-200 focus:border-earth focus:outline-none" required>
+                    </div>
+                    <input type="tel" placeholder="Phone / WhatsApp" class="w-full px-4 py-3 rounded-lg border border-safari-200 focus:border-earth focus:outline-none">
+                    <select class="w-full px-4 py-3 rounded-lg border border-safari-200 focus:border-earth focus:outline-none">
+                        <option>Select Preferred Park</option>
+                        <option>Minneriya National Park</option>
+                        <option>Kaudulla National Park</option>
+                        <option>Hurulu Eco Park</option>
+                        <option>Multiple Parks</option>
+                    </select>
+                    <input type="date" class="w-full px-4 py-3 rounded-lg border border-safari-200 focus:border-earth focus:outline-none">
+                    <textarea rows="4" placeholder="Special Requests or Questions" class="w-full px-4 py-3 rounded-lg border border-safari-200 focus:border-earth focus:outline-none"></textarea>
+                    <button type="submit" class="w-full bg-earth hover:bg-earth-dark text-white font-semibold py-4 rounded-lg transition">
+                        Send Inquiry <i class="fas fa-paper-plane ml-2"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-safari-900 text-safari-300 py-12 border-t border-safari-800">
+        <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-8">
+            <div>
+                <div class="flex items-center gap-2 mb-4">
+                    <i class="fas fa-paw text-2xl text-earth-light"></i>
+                    <span class="font-serif text-xl font-bold text-white editable" data-key="footerBrand">Minneriya & Kaudulla</span>
+                </div>
+                <p class="text-sm leading-relaxed editable" data-key="footerDesc">
+                    Your trusted safari partner in Sri Lanka's cultural triangle. Creating unforgettable wildlife memories since 2009.
+                </p>
+            </div>
+            <div>
+                <h4 class="text-white font-semibold mb-4 editable" data-key="footerLinks1Title">Quick Links</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#home" class="hover:text-earth-light transition">Home</a></li>
+                    <li><a href="#parks" class="hover:text-earth-light transition">Our Parks</a></li>
+                    <li><a href="#tours" class="hover:text-earth-light transition">Safari Packages</a></li>
+                    <li><a href="#contact" class="hover:text-earth-light transition">Contact Us</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-white font-semibold mb-4 editable" data-key="footerLinks2Title">Parks</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#" class="hover:text-earth-light transition">Minneriya</a></li>
+                    <li><a href="#" class="hover:text-earth-light transition">Kaudulla</a></li>
+                    <li><a href="#" class="hover:text-earth-light transition">Hurulu Eco</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-white font-semibold mb-4 editable" data-key="footerNewsletterTitle">Newsletter</h4>
+                <p class="text-sm mb-4 editable" data-key="footerNewsletterDesc">Subscribe for wildlife updates and exclusive offers.</p>
+                <div class="flex">
+                    <input type="email" placeholder="Your email" class="bg-safari-800 border border-safari-700 px-4 py-2 rounded-l-lg text-sm w-full focus:outline-none focus:border-earth">
+                    <button class="bg-earth hover:bg-earth-light px-4 py-2 rounded-r-lg transition"><i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto px-6 mt-8 pt-8 border-t border-safari-800 text-center text-sm">
+            <p class="editable" data-key="footerCopyright">© 2024 Minneriya & Kaudulla Wild Tours. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Admin Login Modal -->
+    <div id="adminModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl transform transition-all">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-earth/10 rounded-full flex items-center justify-center mx-auto mb-4 text-earth text-2xl">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <h3 class="font-serif text-2xl font-bold text-safari-900">Admin Login</h3>
+                <p class="text-safari-600 text-sm mt-1">Enter credentials to edit website content</p>
+            </div>
+            <form onsubmit="event.preventDefault(); loginAdmin();" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-safari-700 mb-1">Username</label>
+                    <input type="text" id="adminUser" value="admin" class="w-full px-4 py-3 rounded-lg border border-safari-200 focus:border-earth focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-safari-700 mb-1">Password</label>
+                    <input type="password" id="adminPass" placeholder="••••••" class="w-full px-4 py-3 rounded-lg border border-safari-200 focus:border-earth focus:outline-none">
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="toggleAdminLogin()" class="flex-1 px-4 py-3 border border-safari-200 rounded-lg hover:bg-safari-50 transition">Cancel</button>
+                    <button type="submit" class="flex-1 bg-earth hover:bg-earth-dark text-white px-4 py-3 rounded-lg font-semibold transition">Login</button>
+                </div>
+            </form>
+            <p class="text-xs text-safari-500 text-center mt-4">Default: admin / safari123</p>
+        </div>
+    </div>
+
+    <script>
+        // Admin State
+        let isAdmin = false;
+        const ADMIN_USER = 'admin';
+        const ADMIN_PASS = 'safari123';
+
+        // Default Content
+        const defaultContent = {
+            siteName: "Minneriya & Kaudulla",
+            siteTagline: "Wild Tours",
+            heroSubtitle: "Discover the Wild Heart of Sri Lanka",
+            heroTitle: "Where Elephants Roam<br>in Freedom",
+            heroDesc: "Experience unforgettable safari adventures across Minneriya, Kaudulla, and Hurulu Eco Park. Witness the majestic gathering of elephants in their natural habitat.",
+            stat1: "15+",
+            stat1Label: "Years Experience",
+            stat2: "3",
+            stat2Label: "National Parks",
+            stat3: "5000+",
+            stat3Label: "Happy Travelers",
+            stat4: "100%",
+            stat4Label: "Satisfaction",
+            aboutSubtitle: "About Our Safari",
+            aboutTitle: "Your Gateway to Sri Lanka's Wildlife",
+            aboutDesc1: "Minneriya and Kaudulla Wild Tours is your trusted partner for authentic wildlife experiences in Sri Lanka's cultural triangle. Led by experienced naturalists and guides, we offer intimate encounters with the island's most magnificent creatures.",
+            aboutDesc2: "From the world-famous elephant gatherings to elusive leopards and vibrant birdlife, every safari is crafted to bring you closer to nature while supporting conservation efforts.",
+            feature1: "Expert Guides",
+            feature2: "4x4 Vehicles",
+            feature3: "Best Times",
+            experienceYears: "15+",
+            experienceText: "Years of Excellence",
+            parksSubtitle: "Explore Nature",
+            parksTitle: "Our Three Signature Parks",
+            park1Location: "Matale District",
+            park1Name: "Minneriya National Park",
+            park1Desc: "Famous for 'The Gathering' – the largest congregation of Asian elephants in the world. Over 300 elephants gather around the ancient Minneriya Tank during the dry season.",
+            park1BestTime: "Best: June - Sept",
+            park1Price: "From $45",
+            park2Location: "Polonnaruwa District",
+            park2Name: "Kaudulla National Park",
+            park2Desc: "A serene sanctuary connecting elephant corridors. Kaudulla offers peaceful safari experiences with excellent birdwatching opportunities and fewer crowds than Minneriya.",
+            park2BestTime: "Best: Aug - Dec",
+            park2Price: "From $40",
+            park3Location: "Habarana",
+            park3Name: "Hurulu Eco Park",
+            park3Desc: "A designated biosphere reserve with dense dry evergreen forest. Perfect for spotting elephants, leopards, and endemic bird species in a pristine natural setting.",
+            park3BestTime: "Best: Year Round",
+            park3Price: "From $35",
+            toursSubtitle: "Choose Your Adventure",
+            toursTitle: "Safari Packages",
+            tour1Name: "Morning Safari",
+            tour1Desc: "Experience the awakening of the jungle. Best time for birdwatching and predator sightings.",
+            tour1Feature1: "5:30 AM - 9:30 AM",
+            tour1Feature2: "Private 4x4 Jeep",
+            tour1Feature3: "Expert Naturalist",
+            tour1Feature4: "Refreshments",
+            tour1Price: "$45",
+            tour1Btn: "Book Now",
+            tour2Badge: "POPULAR",
+            tour2Name: "Evening Safari",
+            tour2Desc: "The golden hour for elephant gatherings. Spectacular sunset views over the tank.",
+            tour2Feature1: "2:30 PM - 6:00 PM",
+            tour2Feature2: "Private 4x4 Jeep",
+            tour2Feature3: "Expert Naturalist",
+            tour2Feature4: "Sunset Photography",
+            tour2Price: "$55",
+            tour2Btn: "Book Now",
+            tour3Name: "Full Day Expedition",
+            tour3Desc: "The ultimate wildlife experience. Visit multiple parks and maximize your sightings.",
+            tour3Feature1: "6:00 AM - 6:00 PM",
+            tour3Feature2: "2 Parks in 1 Day",
+            tour3Feature3: "Gourmet Lunch",
+            tour3Feature4: "Photography Guide",
+            tour3Price: "$120",
+            tour3Btn: "Book Now",
+            gallerySubtitle: "Captured Moments",
+            galleryTitle: "Wildlife Gallery",
+            contactSubtitle: "Get in Touch",
+            contactTitle: "Start Your Adventure",
+            contactDesc: "Ready to witness the magic of Sri Lanka's wildlife? Contact us to customize your safari experience. We respond within 24 hours.",
+            contactPhoneLabel: "Phone / WhatsApp",
+            contactPhone: "+94 77 123 4567",
+            contactEmailLabel: "Email",
+            contactEmail: "info@minneriyawildtours.com",
+            contactAddressLabel: "Location",
+            contactAddress: "Habarana Road, Sigiriya, Sri Lanka",
+            footerBrand: "Minneriya & Kaudulla",
+            footerDesc: "Your trusted safari partner in Sri Lanka's cultural triangle. Creating unforgettable wildlife memories since 2009.",
+            footerLinks1Title: "Quick Links",
+            footerLinks2Title: "Parks",
+            footerNewsletterTitle: "Newsletter",
+            footerNewsletterDesc: "Subscribe for wildlife updates and exclusive offers.",
+            footerCopyright: "© 2024 Minneriya & Kaudulla Wild Tours. All rights reserved."
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadContent();
+            setupScrollReveal();
+            setupNavbar();
+        });
+
+        // Load saved content
+        function loadContent() {
+            const saved = localStorage.getItem('safariContent');
+            const content = saved ? JSON.parse(saved) : defaultContent;
+            
+            document.querySelectorAll('[data-key]').forEach(el => {
+                const key = el.getAttribute('data-key');
+                if (content[key]) {
+                    el.innerHTML = content[key];
+                }
+            });
+        }
+
+        // Admin Login
+        function toggleAdminLogin() {
+            const modal = document.getElementById('adminModal');
+            modal.classList.toggle('hidden');
+            if (!modal.classList.contains('hidden')) {
+                document.getElementById('adminPass').focus();
+            }
+        }
+
+        function loginAdmin() {
+            const user = document.getElementById('adminUser').value;
+            const pass = document.getElementById('adminPass').value;
+            
+            if (user === ADMIN_USER && pass === ADMIN_PASS) {
+                isAdmin = true;
+                document.getElementById('adminModal').classList.add('hidden');
+                document.getElementById('adminBar').classList.remove('hidden');
+                document.body.classList.add('admin-active');
+                document.getElementById('navbar').classList.add('top-10');
+                makeEditable();
+                alert('Admin mode activated! Click on any text to edit. Remember to click "Save Changes" when done.');
+            } else {
+                alert('Invalid credentials!');
+            }
+        }
+
+        function logoutAdmin() {
+            isAdmin = false;
+            document.getElementById('adminBar').classList.add('hidden');
+            document.body.classList.remove('admin-active');
+            document.getElementById('navbar').classList.remove('top-10');
+            document.querySelectorAll('.editable').forEach(el => {
+                el.contentEditable = 'false';
+            });
+        }
+
+        function makeEditable() {
+            document.querySelectorAll('.editable').forEach(el => {
+                el.contentEditable = 'true';
+                el.addEventListener('blur', () => {
+                    // Auto-save to memory on blur (optional)
+                });
+            });
+        }
+
+        function saveChanges() {
+            const content = {};
+            document.querySelectorAll('[data-key]').forEach(el => {
+                const key = el.getAttribute('data-key');
+                content[key] = el.innerHTML;
+            });
+            localStorage.setItem('safariContent', JSON.stringify(content));
+            alert('Changes saved successfully! They will persist in this browser.');
+        }
+
+        function resetDefaults() {
+            if (confirm('Reset all content to default? This cannot be undone.')) {
+                localStorage.removeItem('safariContent');
+                location.reload();
+            }
+        }
+
+        // Mobile Menu
+        function toggleMobileMenu() {
+            document.getElementById('mobileMenu').classList.toggle('hidden');
+        }
+
+        // Scroll Reveal
+        function setupScrollReveal() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+        }
+
+        // Navbar scroll effect
+        function setupNavbar() {
+            window.addEventListener('scroll', () => {
+                const nav = document.getElementById('navbar');
+                if (window.scrollY > 50) {
+                    nav.classList.remove('bg-transparent', 'text-white');
+                    nav.classList.add('bg-white/95', 'backdrop-blur-md', 'text-safari-900', 'shadow-md');
+                } else {
+                    nav.classList.add('bg-transparent', 'text-white');
+                    nav.classList.remove('bg-white/95', 'backdrop-blur-md', 'text-safari-900', 'shadow-md');
+                }
+            });
+        }
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    document.getElementById('mobileMenu').classList.add('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
